@@ -5,17 +5,18 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 7th April 2020 5:49:02 pm
+# Last Modified:  Wednesday, 29th April 2020 2:17:57 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
-import  os
+import os
+import shutil
 import argparse
 
 def getParameters():
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('--root', type=str, default="D:\\PatchFace\\PleaseWork\\multi-style-gan")
+    parser.add_argument('--root', type=str, default="D:\\PatchFace\\PleaseWork\\wocao")
     return parser.parse_args()
 
 
@@ -31,14 +32,21 @@ dir_list = [
 
 scripts_list = [
     "main.py",
-    "parameters.py",
-    "env/config.json"
+    "update.py",
+    # "parameters.py",
+    "env/config.json",
+    "utilities/reporter.py",
+    "utilities/yaml_config.py",
+    "utilities/json_config.py",
+    "utilities/sshupload.py"
 ]
 
 if __name__ == "__main__":
     config = getParameters()
 
     root_dir = config.root
+    template_root = "./related_scripts"
+
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
 
@@ -46,6 +54,11 @@ if __name__ == "__main__":
         if not os.path.exists(os.path.join(root_dir,item)):
             os.makedirs(os.path.join(root_dir,item))
     for item in scripts_list:
-        if not os.path.exists(os.path.join(root_dir,item)):
-            script_file = open(os.path.join(root_dir,item), "w", encoding="utf-8")
-            script_file.close()
+        project_file = os.path.join(root_dir,item)
+        if not os.path.exists(project_file):
+            template_file = os.path.join(template_root,item)
+            if os.path.exists(template_file):
+                shutil.copyfile(template_file,project_file)
+            else:
+                script_file = open(project_file, "w", encoding="utf-8")
+                script_file.close()
