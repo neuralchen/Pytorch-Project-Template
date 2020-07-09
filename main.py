@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Wednesday, 29th April 2020 2:17:57 pm
+# Last Modified:  Thursday, 9th July 2020 10:00:29 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -56,7 +56,8 @@ if __name__ == "__main__":
     for item in scripts_list:
         project_file = os.path.join(root_dir,item)
         if not os.path.exists(project_file):
-            template_file = os.path.join(template_root,item)
+            _,fullfilename = os.path.split(item)
+            template_file = os.path.join(template_root,fullfilename)
             if os.path.exists(template_file):
                 shutil.copyfile(template_file,project_file)
             else:
