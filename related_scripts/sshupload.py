@@ -1,12 +1,16 @@
-######################################################################
-#  script name  : fileSynchronizer.py
-#  author       : Lcx
-#  created time : 2019.7.20
-#  modification time ：2019.7.21
-######################################################################
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+#############################################################
+# File: sshupload.py
+# Created Date: Tuesday September 24th 2019
+# Author: Lcx
+# Email: chenxuanhongzju@outlook.com
+# Last Modified:  Thursday, 9th July 2020 10:30:40 am
+# Modified By: Chen Xuanhong
+# Copyright (c) 2019 Shanghai Jiao Tong University
+#############################################################
 
 import paramiko,os
-# ssh传输类：
 
 class fileUploaderClass(object):
     def __init__(self,serverIp,userName,passWd):

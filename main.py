@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 10:00:29 am
+# Last Modified:  Thursday, 9th July 2020 10:32:22 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -30,15 +30,16 @@ dir_list = [
     "components"
 ]
 
-scripts_list = [
-    "main.py",
-    "update.py",
-    # "parameters.py",
-    "env/config.json",
-    "utilities/reporter.py",
-    "utilities/yaml_config.py",
-    "utilities/json_config.py",
-    "utilities/sshupload.py"
+scripts_list = [ # [source filename in related_scripts]>[target file path]
+    "main.py>main.py",
+    "update.py>update.py",
+    "update.ico>update.ico",
+    "data_loader.py>data_tools/data_loader.py",
+    "config.json>env/config.json",
+    "reporter.py>utilities/reporter.py",
+    "yaml_config.py>utilities/yaml_config.py",
+    "json_config.py>utilities/json_config.py",
+    "sshupload.py>utilities/sshupload.py"
 ]
 
 if __name__ == "__main__":
@@ -54,9 +55,12 @@ if __name__ == "__main__":
         if not os.path.exists(os.path.join(root_dir,item)):
             os.makedirs(os.path.join(root_dir,item))
     for item in scripts_list:
-        project_file = os.path.join(root_dir,item)
+        source,target=item.split(">")
+        source = source.strip()
+        target = target.strip()
+        project_file = os.path.join(root_dir,target)
         if not os.path.exists(project_file):
-            _,fullfilename = os.path.split(item)
+            _,fullfilename = os.path.split(source)
             template_file = os.path.join(template_root,fullfilename)
             if os.path.exists(template_file):
                 shutil.copyfile(template_file,project_file)

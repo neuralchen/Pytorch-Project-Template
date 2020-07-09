@@ -5,7 +5,7 @@
 # Created Date: Wednesday February 26th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Monday, 20th April 2020 12:57:02 pm
+# Last Modified:  Thursday, 9th July 2020 10:31:30 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -14,11 +14,11 @@ from pathlib import Path
 import json
 from utilities.sshupload import fileUploaderClass
 
-ssh_ip = "192.168.101.57"
-ssh_username = "gdp"
-ssh_passwd = "glass123456"
+ssh_ip = "xxx.xxx.xxx.xxx"
+ssh_username = "x"
+ssh_passwd = "x"
 ssh_port = 22
-root_path = "/home/gdp/CXH/StyleTransfer"
+root_path = "/path"
 
 scan_config={
     "white_list":["py","yaml"],
