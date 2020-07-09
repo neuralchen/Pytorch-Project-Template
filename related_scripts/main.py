@@ -5,19 +5,23 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 11:09:04 am
+# Last Modified:  Thursday, 9th July 2020 2:16:22 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
-from    utilities.reporter import Reporter
-import  platform
+
+
 import  os
 import  json
 import  shutil
+import  argparse
+import  platform
+from    torch.backends import cudnn
 from    utilities.json_config import *
+from    utilities.reporter import Reporter
 from    utilities.yaml_config import getConfigYaml
 from    utilities.sshupload import fileUploaderClass
-import  argparse
+
 
 # sys_state is used to remember the configurations of project
 # 
@@ -29,24 +33,29 @@ def str2bool(v):
 def getParameters():
     parser = argparse.ArgumentParser()
 
-    # general
+    # general settings
     parser.add_argument('--mode', type=str, default="test", choices=['train', 'finetune','test','debug'])
     parser.add_argument('--cuda', type=int, default=-1) # >0 if it is set as -1, program will use CPU
     parser.add_argument('--dataloader_workers', type=int, default=1)
-    parser.add_argument('--checkpoint', type=int, default=0)
-    parser.add_argument('--train_logs_root', type=str, default="")
+    parser.add_argument('--checkpoint', type=int, default=0, help="checkpoint step for test mode or finetune mode")
+    
     # training
-    parser.add_argument('--version', type=str, default='version')
+    parser.add_argument('--version', type=str, default='version', help="version name for train, test, finetune")
     parser.add_argument('--experiment_description', type=str, default="description")
     parser.add_argument('--train_yaml', type=str, default="train.yaml")
+
+    # test
+    parser.add_argument('--test_scriptName', type=str, default='tester')
+    
+    # logs (does not to be changed in most time)
     parser.add_argument('--use_tensorboard', type=str2bool, default='True', choices=['True', 'False'], help='enable the tensorboard')
     parser.add_argument('--log_step', type=int, default=0)
     parser.add_argument('--sample_step', type=int, default=0)
     parser.add_argument('--model_save_step', type=int, default=0)
-    # test
-    parser.add_argument('--test_scriptName', type=str, default='tester')
+    parser.add_argument('--train_logs_root', type=str, default="")
+    
 
-    # template
+    # template (onece editing finished, it should be deleted)
     parser.add_argument('--str_parameter', type=str, default="default", help='str parameter')
     parser.add_argument('--str_parameter_choices', type=str, default="default", choices=['choice1', 'choice2','choice3'], help='str parameter with choices list')
     parser.add_argument('--int_parameter', type=int, default=0, help='int parameter')
@@ -85,16 +94,18 @@ def create_dirs(sys_state):
     
     sys_state["reporterPath"] = os.path.join(projectRoot,sys_state["version"]+"_report")
 
-def main(config):
+def main():
     config = getParameters()
     # speed up the program
     cudnn.benchmark = True
+
     ignoreKey = [
         "dataloader_workers","logRootPath",
         "projectRoot","projectSummary","projectCheckpoints",
         "projectSamples","projectScripts","reporterPath",
         "useSpecifiedImg","dataset_path", "cuda"
     ]
+
     sys_state = {}
 
     sys_state["dataloader_workers"] = config.dataloader_workers
@@ -103,7 +114,7 @@ def main(config):
         
     # For fast training
 
-    # read system environment path
+    # read system environment paths
     env_config = read_config('env/config.json')
     env_config = env_config["path"]
 
@@ -113,8 +124,9 @@ def main(config):
     if config.mode == "train":
         
         sys_state["version"]                = config.version
-        sys_state["experimentDescription"]  = config.experimentDescription
+        sys_state["experiment_description"]  = config.experiment_description
         sys_state["mode"]                   = config.mode
+
         # read training configurations
         ymal_config = getConfigYaml(os.path.join(env_config["trainConfigPath"], config.trainYaml))
         for item in ymal_config.items():
@@ -297,5 +309,4 @@ def main(config):
 
 
 if __name__ == '__main__':
-    config = getParameters()
-    # your code
+    main()
