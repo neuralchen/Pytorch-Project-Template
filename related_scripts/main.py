@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 11:08:09 am
+# Last Modified:  Thursday, 9th July 2020 11:09:04 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -63,7 +63,6 @@ def create_dirs(sys_state):
 
     # create dirs
     sys_state["projectRoot"]        = os.path.join(sys_state["logRootPath"], sys_state["version"])
-
     projectRoot                     = sys_state["projectRoot"]
     if not os.path.exists(projectRoot):
         os.makedirs(projectRoot)
@@ -87,8 +86,6 @@ def create_dirs(sys_state):
     sys_state["reporterPath"] = os.path.join(projectRoot,sys_state["version"]+"_report")
 
 def main(config):
-     import warnings
-    # warnings.filterwarnings('ignore')
     config = getParameters()
     # speed up the program
     cudnn.benchmark = True
