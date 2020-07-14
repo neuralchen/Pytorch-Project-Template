@@ -5,7 +5,7 @@
 # Created Date: Tuesday September 24th 2019
 # Author: Lcx
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 10:30:40 am
+# Last Modified:  Sunday, 12th July 2020 4:27:49 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2019 Shanghai Jiao Tong University
 #############################################################
@@ -13,11 +13,11 @@
 import paramiko,os
 
 class fileUploaderClass(object):
-    def __init__(self,serverIp,userName,passWd):
+    def __init__(self,serverIp,userName,passWd,port=22):
         self.__ip__         = serverIp
         self.__userName__   = userName
         self.__passWd__     = passWd
-        self.__port__       = 22
+        self.__port__       = port
         self.__ssh__        = paramiko.SSHClient()
         self.__ssh__.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 

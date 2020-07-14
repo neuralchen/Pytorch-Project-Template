@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 2:16:22 pm
+# Last Modified:  Saturday, 11th July 2020 5:52:45 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -45,7 +45,7 @@ def getParameters():
     parser.add_argument('--train_yaml', type=str, default="train.yaml")
 
     # test
-    parser.add_argument('--test_scriptName', type=str, default='tester')
+    parser.add_argument('--test_script_name', type=str, default='tester script name')
     
     # logs (does not to be changed in most time)
     parser.add_argument('--use_tensorboard', type=str2bool, default='True', choices=['True', 'False'], help='enable the tensorboard')
@@ -68,7 +68,7 @@ def getParameters():
 def create_dirs(sys_state):
     # the base dir
     if not os.path.exists(sys_state["logRootPath"]):
-            os.makedirs(sys_state["logRootPath"])
+        os.makedirs(sys_state["logRootPath"])
 
     # create dirs
     sys_state["projectRoot"]        = os.path.join(sys_state["logRootPath"], sys_state["version"])
@@ -109,10 +109,10 @@ def main():
     sys_state = {}
 
     sys_state["dataloader_workers"] = config.dataloader_workers
+
+    # setting the GPU number
     if config.cuda >= 0:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(config.cuda)
-        
-    # For fast training
 
     # read system environment paths
     env_config = read_config('env/config.json')
@@ -124,7 +124,7 @@ def main():
     if config.mode == "train":
         
         sys_state["version"]                = config.version
-        sys_state["experiment_description"]  = config.experiment_description
+        sys_state["experiment_description"] = config.experiment_description
         sys_state["mode"]                   = config.mode
 
         # read training configurations
@@ -133,7 +133,7 @@ def main():
             sys_state[item[0]] = item[1]
 
         # create dirs
-        sys_state["logRootPath"]        = env_config["trainLogRoot"]
+        sys_state["logRootPath"] = config.train_logs_root
         create_dirs(sys_state)
         
         # create reporter file
@@ -144,7 +144,8 @@ def main():
         write_config(config_json, sys_state)
 
         # save the scripts
-        # copy the scripts to the project dir 
+        # copy the scripts to the project dir
+        
         file1       = os.path.join(env_config["trainScriptsPath"], "trainer_%s.py"%sys_state["trainScriptName"])
         tgtfile1    = os.path.join(sys_state["projectScripts"], "trainer_%s.py"%sys_state["trainScriptName"])
         shutil.copyfile(file1,tgtfile1)
@@ -248,7 +249,7 @@ def main():
                 print("%s file exists"%("%d_Generator.pth"%sys_state["checkpointStep"]))
         sys_state["ckp_name"]       = os.path.join(sys_state["projectCheckpoints"], "%d_Generator.pth"%sys_state["checkpointStep"])    
         # Get the test configurations
-        sys_state["testScriptName"]= config.testScriptName
+        sys_state["testScriptName"] = config.testScriptName
         sys_state["batchSize"]      = config.testBatchSize
         sys_state["totalImg"]       = config.totalImg
         sys_state["saveTestImg"]    = config.saveTestImg
@@ -294,9 +295,6 @@ def main():
         reporter.writeConfig(sys_state)
 
         print("prepare the dataloader...")
-        # style_loader,content_loader  = getLoader(sys_state["style"], sys_state["content"],
-        #                     sys_state["selectedStyleDir"],sys_state["selectedContentDir"],
-        #                     sys_state["imCropSize"], sys_state["batchSize"],sys_state["dataloader_workers"])
         total_loader  = getLoader(sys_state["style"], sys_state["content"],
                             sys_state["selectedStyleDir"],sys_state["selectedContentDir"],
                             sys_state["imCropSize"], sys_state["batchSize"],sys_state["dataloader_workers"])
@@ -304,7 +302,6 @@ def main():
         package     = __import__(moduleName, fromlist=True)
         trainerClass= getattr(package, 'Trainer')
         trainer     = trainerClass(sys_state, total_loader,reporter)
-        # trainer  = Trainer(sys_state,reporter)
         trainer.train()
 
 

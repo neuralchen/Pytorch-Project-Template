@@ -1,0 +1,13 @@
+{
+    "remote_ip": "192.168.101.57",
+    "remote_user": "gdp",
+    "remote_port": 22,
+    "remote_passwd": "1",
+    "remote_path": "/home/gdp/CXH/StyleTransfer",
+    "white_list": [
+        "py",
+        "yaml"
+    ],
+    "log_path": "./file_sync/",
+    "logfilename": "filestate.json"
+}

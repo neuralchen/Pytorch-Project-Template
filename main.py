@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Thursday, 9th July 2020 10:32:22 am
+# Last Modified:  Sunday, 12th July 2020 4:21:49 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -32,14 +32,15 @@ dir_list = [
 
 scripts_list = [ # [source filename in related_scripts]>[target file path]
     "main.py>main.py",
-    "update.py>update.py",
+    "UpdateGUI.py>UpdateGUI.py",
     "update.ico>update.ico",
     "data_loader.py>data_tools/data_loader.py",
     "config.json>env/config.json",
     "reporter.py>utilities/reporter.py",
     "yaml_config.py>utilities/yaml_config.py",
     "json_config.py>utilities/json_config.py",
-    "sshupload.py>utilities/sshupload.py"
+    "sshupload.py>utilities/sshupload.py",
+    "CheckpointManager.py>utilities/CheckpointManager.py"
 ]
 
 if __name__ == "__main__":
