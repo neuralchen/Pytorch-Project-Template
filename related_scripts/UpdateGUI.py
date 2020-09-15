@@ -5,7 +5,7 @@
 # Created Date: Wednesday February 26th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Sunday, 12th July 2020 4:33:30 pm
+# Last Modified:  Monday, 27th July 2020 9:49:41 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -151,7 +151,6 @@ class fileUploaderClass(object):
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master,bg='black')
-        self.font_name = 'å¾®è½¯é›…é»‘'
         self.font_size = 16
         self.padx = 5
         self.pady = 5

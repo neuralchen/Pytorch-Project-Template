@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Saturday, 11th July 2020 5:52:45 pm
+# Last Modified:  Monday, 27th July 2020 11:32:18 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -17,19 +17,19 @@ import  shutil
 import  argparse
 import  platform
 from    torch.backends import cudnn
-from    utilities.json_config import *
+from    utilities.json_config import readConfig, writeConfig
 from    utilities.reporter import Reporter
 from    utilities.yaml_config import getConfigYaml
 from    utilities.sshupload import fileUploaderClass
 
 
-# sys_state is used to remember the configurations of project
-# 
-#
-
 def str2bool(v):
     return v.lower() in ('true')
 
+####################################################################################
+# To configure the seting of training\finetune\test
+#
+####################################################################################
 def getParameters():
     parser = argparse.ArgumentParser()
 
@@ -65,7 +65,17 @@ def getParameters():
     parser.add_argument('--list_int_parameter', type=int, nargs='+', default=[0,1], help='int list parameter')
     return parser.parse_args()
 
-def create_dirs(sys_state):
+####################################################################################
+# This function will create the related directories before the 
+# training\fintune\test starts
+# Your_log_root (version name)
+#   |---summary/...
+#   |---samples/...
+#   |---checkpoints/...
+#   |---scripts/...
+#
+####################################################################################
+def createDirs(sys_state):
     # the base dir
     if not os.path.exists(sys_state["logRootPath"]):
         os.makedirs(sys_state["logRootPath"])
@@ -107,15 +117,15 @@ def main():
     ]
 
     sys_state = {}
-
+    # set the thread number of data loading task
     sys_state["dataloader_workers"] = config.dataloader_workers
 
-    # setting the GPU number
+    # set the GPU number
     if config.cuda >= 0:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(config.cuda)
 
     # read system environment paths
-    env_config = read_config('env/config.json')
+    env_config = readConfig('env/config.json')
     env_config = env_config["path"]
 
     sys_state["cuda"]   = config.cuda
@@ -128,23 +138,23 @@ def main():
         sys_state["mode"]                   = config.mode
 
         # read training configurations
-        ymal_config = getConfigYaml(os.path.join(env_config["trainConfigPath"], config.trainYaml))
+        ymal_config = getConfigYaml(os.path.join(env_config["trainConfigPath"], config.train_yaml))
         for item in ymal_config.items():
             sys_state[item[0]] = item[1]
 
-        # create dirs
+        # create related dirs
         sys_state["logRootPath"] = config.train_logs_root
-        create_dirs(sys_state)
+        createDirs(sys_state)
         
         # create reporter file
         reporter = Reporter(sys_state["reporterPath"])
 
         # save the config json
         config_json = os.path.join(sys_state["projectRoot"], env_config["configJsonName"])
-        write_config(config_json, sys_state)
+        writeConfig(config_json, sys_state)
 
-        # save the scripts
-        # copy the scripts to the project dir
+        # save the dependent scripts 
+        # and copy the scripts to the project dir
         
         file1       = os.path.join(env_config["trainScriptsPath"], "trainer_%s.py"%sys_state["trainScriptName"])
         tgtfile1    = os.path.join(sys_state["projectScripts"], "trainer_%s.py"%sys_state["trainScriptName"])
@@ -165,7 +175,7 @@ def main():
         sys_state["checkpointStep"] = config.checkpoint
 
         config_json                 = os.path.join(sys_state["projectRoot"], env_config["configJsonName"])
-        train_config                = read_config(config_json)
+        train_config                = readConfig(config_json)
         for item in train_config.items():
             if item[0] in ignoreKey:
                 pass
@@ -173,7 +183,7 @@ def main():
                 sys_state[item[0]] = item[1]
         
         sys_state["mode"]           = config.mode
-        create_dirs(sys_state)
+        createDirs(sys_state)
         reporter = Reporter(sys_state["reporterPath"])
         sys_state["com_base"]       = "train_logs.%s.scripts."%sys_state["version"]
         
@@ -191,15 +201,15 @@ def main():
             os.makedirs(sys_state["testSamples"])
         
         if config.useSpecifiedImg:
-            sys_state["useSpecifiedImg"]   = config.useSpecifiedImg       
+            sys_state["useSpecifiedImg"]   = config.useSpecifiedImg
         # Create dirs
-        create_dirs(sys_state)
+        createDirs(sys_state)
         config_json = os.path.join(sys_state["projectRoot"], env_config["configJsonName"])
         
         # Read model_config.json from remote machine
         if sys_state["nodeName"]!="localhost":
             print("ready to fetch the %s from the server!"%config_json)
-            nodeinf     = read_config(env_config["remoteNodeInfo"])
+            nodeinf     = readConfig(env_config["remoteNodeInfo"])
             nodeinf     = nodeinf[sys_state["nodeName"]]
             uploader    = fileUploaderClass(nodeinf["ip"],nodeinf["user"],nodeinf["passwd"])
             if config.train_logs_root=="":
@@ -217,7 +227,7 @@ def main():
             print("success get the config file from server %s"%nodeinf['ip'])
 
         # Read model_config.json
-        json_obj    = read_config(config_json)
+        json_obj    = readConfig(config_json)
         for item in json_obj.items():
             if item[0] in ignoreKey:
                 pass
@@ -270,6 +280,7 @@ def main():
         tester.test()
     
     if config.mode == "train" or config.mode == "finetune":
+        
         # get the dataset path
         sys_state["content"]= env_config["datasetPath"]["Place365_big"]
         sys_state["style"]  = env_config["datasetPath"]["WikiArt"]

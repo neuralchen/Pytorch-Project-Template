@@ -5,7 +5,7 @@
 # Created Date: Sunday July 12th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Sunday, 12th July 2020 4:02:50 pm
+# Last Modified:  Monday, 27th July 2020 11:01:16 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -22,22 +22,22 @@ class CheckpointManager(object):
         self.currentEpoch   = 0
         
 
-    def RegisterModels(self):
+    def registerModels(self):
         pass
 
-    def __UpdateCkpList__(self):
+    def __updateCkpList__(self):
         pass
 
-    def SaveModel(self):
+    def saveModel(self):
         pass
 
-    def LoadModel(self):
+    def loadModel(self):
         pass
 
-    def SaveLR(self):
+    def saveLR(self):
         pass
 
-    def LoadLR(self):
+    def loadLR(self):
         pass
 
     

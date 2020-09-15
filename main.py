@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Sunday, 12th July 2020 4:21:49 pm
+# Last Modified:  Monday, 27th July 2020 11:09:52 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -40,7 +40,7 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "yaml_config.py>utilities/yaml_config.py",
     "json_config.py>utilities/json_config.py",
     "sshupload.py>utilities/sshupload.py",
-    "CheckpointManager.py>utilities/CheckpointManager.py"
+    "checkpoint_manager.py>utilities/checkpoint_manager.py"
 ]
 
 if __name__ == "__main__":
