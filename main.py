@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Monday, 27th July 2020 11:09:52 pm
+# Last Modified:  Friday, 25th December 2020 2:08:22 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -16,7 +16,7 @@ import argparse
 def getParameters():
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('--root', type=str, default="D:\\PatchFace\\PleaseWork\\wocao")
+    parser.add_argument('--root', type=str, default="H:\\Steel\\Classification")
     return parser.parse_args()
 
 
@@ -40,7 +40,9 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "yaml_config.py>utilities/yaml_config.py",
     "json_config.py>utilities/json_config.py",
     "sshupload.py>utilities/sshupload.py",
-    "checkpoint_manager.py>utilities/checkpoint_manager.py"
+    "checkpoint_manager.py>utilities/checkpoint_manager.py",
+    "figure.py>utilities/figure.py",
+    "README.md>README.md"
 ]
 
 if __name__ == "__main__":
