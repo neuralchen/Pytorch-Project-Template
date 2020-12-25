@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Monday, 27th July 2020 11:32:18 pm
+# Last Modified:  Friday, 25th December 2020 5:06:50 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -34,13 +34,14 @@ def getParameters():
     parser = argparse.ArgumentParser()
 
     # general settings
-    parser.add_argument('--mode', type=str, default="test", choices=['train', 'finetune','test','debug'])
+    parser.add_argument('--version', type=str, default='version', help="version name for train, test, finetune")
+    parser.add_argument('--mode', type=str, default="test", 
+                            choices=['train', 'finetune','test','debug'], help="The mode of current project")
     parser.add_argument('--cuda', type=int, default=-1) # >0 if it is set as -1, program will use CPU
     parser.add_argument('--dataloader_workers', type=int, default=1)
     parser.add_argument('--checkpoint', type=int, default=0, help="checkpoint step for test mode or finetune mode")
     
     # training
-    parser.add_argument('--version', type=str, default='version', help="version name for train, test, finetune")
     parser.add_argument('--experiment_description', type=str, default="description")
     parser.add_argument('--train_yaml', type=str, default="train.yaml")
 
@@ -48,7 +49,8 @@ def getParameters():
     parser.add_argument('--test_script_name', type=str, default='tester script name')
     
     # logs (does not to be changed in most time)
-    parser.add_argument('--use_tensorboard', type=str2bool, default='True', choices=['True', 'False'], help='enable the tensorboard')
+    parser.add_argument('--use_tensorboard', type=str2bool, default='True',
+                            choices=['True', 'False'], help='enable the tensorboard')
     parser.add_argument('--log_step', type=int, default=0)
     parser.add_argument('--sample_step', type=int, default=0)
     parser.add_argument('--model_save_step', type=int, default=0)

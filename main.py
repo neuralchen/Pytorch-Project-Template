@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 25th December 2020 2:08:22 pm
+# Last Modified:  Friday, 25th December 2020 5:10:24 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -42,7 +42,9 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "sshupload.py>utilities/sshupload.py",
     "checkpoint_manager.py>utilities/checkpoint_manager.py",
     "figure.py>utilities/figure.py",
-    "README.md>README.md"
+    "README.md>README.md",
+    "train_script_template.py>train_scripts/train_script_template.py",
+    "test_script_template.py>test_scripts/test_script_template.py"
 ]
 
 if __name__ == "__main__":

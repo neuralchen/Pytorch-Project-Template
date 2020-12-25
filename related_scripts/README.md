@@ -10,6 +10,8 @@
 - torchvision
 
 ## Usage
+- To configure the project in the ```main.py```.
+
 
 ## Acknowledgement
 
