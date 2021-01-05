@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 25th December 2020 5:06:50 pm
+# Last Modified:  Tuesday, 5th January 2021 2:27:48 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -35,11 +35,11 @@ def getParameters():
 
     # general settings
     parser.add_argument('--version', type=str, default='version', help="version name for train, test, finetune")
-    parser.add_argument('--mode', type=str, default="test", 
-                            choices=['train', 'finetune','test','debug'], help="The mode of current project")
+    parser.add_argument('--phase', type=str, default="test", 
+                            choices=['train', 'finetune','test','debug'], help="The phase of current project")
     parser.add_argument('--cuda', type=int, default=-1) # >0 if it is set as -1, program will use CPU
     parser.add_argument('--dataloader_workers', type=int, default=1)
-    parser.add_argument('--checkpoint', type=int, default=0, help="checkpoint step for test mode or finetune mode")
+    parser.add_argument('--checkpoint', type=int, default=0, help="checkpoint step for test phase or finetune phase")
     
     # training
     parser.add_argument('--experiment_description', type=str, default="description")
@@ -72,7 +72,7 @@ def getParameters():
 # training\fintune\test starts
 # Your_log_root (version name)
 #   |---summary/...
-#   |---samples/...
+#   |---samples/... (save evaluated images)
 #   |---checkpoints/...
 #   |---scripts/...
 #
@@ -127,19 +127,19 @@ def main():
         os.environ["CUDA_VISIBLE_DEVICES"] = str(config.cuda)
 
     # read system environment paths
-    env_config = readConfig('env/config.json')
+    env_config = readConfig('env/env.json')
     env_config = env_config["path"]
 
     sys_state["cuda"]   = config.cuda
     
-    # Train mode
-    if config.mode == "train":
+    # Train phase
+    if config.phase == "train":
         
         sys_state["version"]                = config.version
         sys_state["experiment_description"] = config.experiment_description
-        sys_state["mode"]                   = config.mode
+        sys_state["phase"]                   = config.phase
 
-        # read training configurations
+        # read training configurations from yaml file
         ymal_config = getConfigYaml(os.path.join(env_config["trainConfigPath"], config.train_yaml))
         for item in ymal_config.items():
             sys_state[item[0]] = item[1]
@@ -170,7 +170,7 @@ def main():
         tgtfile3    = os.path.join(sys_state["projectScripts"], "%s.py"%sys_state["dScriptName"])
         shutil.copyfile(file3,tgtfile3)
 
-    elif config.mode == "finetune":
+    elif config.phase == "finetune":
         sys_state["logRootPath"]    = env_config["trainLogRoot"]
         sys_state["version"]        = config.version
         sys_state["projectRoot"]    = os.path.join(sys_state["logRootPath"], sys_state["version"])
@@ -184,12 +184,12 @@ def main():
             else:
                 sys_state[item[0]] = item[1]
         
-        sys_state["mode"]           = config.mode
+        sys_state["phase"]           = config.phase
         createDirs(sys_state)
         reporter = Reporter(sys_state["reporterPath"])
         sys_state["com_base"]       = "train_logs.%s.scripts."%sys_state["version"]
         
-    elif config.mode == "test":
+    elif config.phase == "test":
         sys_state["version"]        = config.version
         sys_state["logRootPath"]    = env_config["trainLogRoot"]
         sys_state["nodeName"]       = config.nodeName
@@ -235,10 +235,6 @@ def main():
                 pass
             else:
                 sys_state[item[0]] = item[1]
-        
-        # get the dataset path
-        sys_state["content"]= env_config["datasetPath"]["Place365_big"]
-        sys_state["style"]  = env_config["datasetPath"]["WikiArt"]
             
         # Read scripts from remote machine
         if sys_state["nodeName"]!="localhost":
@@ -281,7 +277,7 @@ def main():
         tester      = testerClass(sys_state,reporter)
         tester.test()
     
-    if config.mode == "train" or config.mode == "finetune":
+    if config.phase == "train" or config.phase == "finetune":
         
         # get the dataset path
         sys_state["content"]= env_config["datasetPath"]["Place365_big"]
@@ -289,8 +285,12 @@ def main():
 
         # display the training information
         moduleName  = "train_scripts.trainer_" + sys_state["trainScriptName"]
-        if config.mode == "finetune":
+        if config.phase == "finetune":
             moduleName  = sys_state["com_base"] + "trainer_" + sys_state["trainScriptName"]
+        
+        # get the dataset path
+        sys_state["content"]= env_config["datasetPath"]["Place365_big"]
+        sys_state["style"]  = env_config["datasetPath"]["WikiArt"]
         
         # print some important information
         print("Start to run training script: {}".format(moduleName))

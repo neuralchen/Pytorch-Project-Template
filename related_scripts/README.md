@@ -3,9 +3,9 @@
 ## Dependencies
 - python
 - yaml (pip install pyyaml)
-- paramiko
+- paramiko (For ssh file transportation)
 - pytorch
-- tkinter
+- tkinter (For GUI)
 - pillow
 - torchvision
 
@@ -16,3 +16,4 @@
 ## Acknowledgement
 
 ## Related Projects
+Learn about our other projects [[RainNet]](https://neuralchen.github.io/RainNet), [[Sketch Generation]](https://github.com/TZYSJTU/Sketch-Generation-with-Drawing-Process-Guided-by-Vector-Flow-and-Grayscale), [[CooGAN]](https://github.com/neuralchen/CooGAN), [[Knowledge Style Transfer]](https://github.com/AceSix/Knowledge_Transfer).

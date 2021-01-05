@@ -5,7 +5,7 @@
 # Created Date: Wednesday February 26th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Monday, 27th July 2020 9:49:41 pm
+# Last Modified:  Tuesday, 5th January 2021 3:34:29 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -152,17 +152,18 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master,bg='black')
         self.font_size = 16
+        self.font_name = "Times New Roman"
         self.padx = 5
         self.pady = 5
         try:
             config = read_config("./synchronize_log.json")
         except:
             config = {
-                "remote_ip": "192.168.101.57",
-                "remote_user": "gdp",
+                "remote_ip": "191.168.1.111",
+                "remote_user": "username",
                 "remote_port": 22,
-                "remote_passwd": "glass123456",
-                "remote_path": "/home/gdp/CXH/StyleTransfer",
+                "remote_passwd": "12345678",
+                "remote_path": "/path/to/remote_host",
                 "white_list": [
                     "py",
                     "yaml"
@@ -257,7 +258,7 @@ class Application(tk.Frame):
         self.passwd_label.grid(row=i,padx=self.padx,pady=self.pady)
         self.passwd_str = tk.StringVar()
         self.passwd_str.set(self.remote_passwd)
-        self.passwd_entry = tk.Entry(self.master,font=font_list, width=30, textvariable=self.passwd_str)
+        self.passwd_entry = tk.Entry(self.master,font=font_list, width=30, textvariable=self.passwd_str,show="*")
         self.passwd_entry.grid(row=i,column=1,padx=self.padx,pady=self.pady)
 
         i += 1

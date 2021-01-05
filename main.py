@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 25th December 2020 5:10:24 pm
+# Last Modified:  Tuesday, 5th January 2021 2:34:05 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -16,14 +16,14 @@ import argparse
 def getParameters():
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('--root', type=str, default="H:\\Steel\\Classification")
+    parser.add_argument('--root', type=str, default="H:\\RainNet\\Code")
     return parser.parse_args()
 
 
 dir_list = [
     "data_tools",
     "env",
-    "train_configs",
+    "train_yamls",
     "train_scripts",
     "test_scripts",
     "utilities",
@@ -35,7 +35,6 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "UpdateGUI.py>UpdateGUI.py",
     "update.ico>update.ico",
     "data_loader.py>data_tools/data_loader.py",
-    "config.json>env/config.json",
     "reporter.py>utilities/reporter.py",
     "yaml_config.py>utilities/yaml_config.py",
     "json_config.py>utilities/json_config.py",
@@ -44,7 +43,9 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "figure.py>utilities/figure.py",
     "README.md>README.md",
     "train_script_template.py>train_scripts/train_script_template.py",
-    "test_script_template.py>test_scripts/test_script_template.py"
+    "test_script_template.py>test_scripts/test_script_template.py",
+    "learningrate_scheduler.py>utilities/learningrate_scheduler.py",
+    "env.json>env/env.json"
 ]
 
 if __name__ == "__main__":
