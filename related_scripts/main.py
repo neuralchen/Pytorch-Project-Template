@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 5th January 2021 2:27:48 pm
+# Last Modified:  Tuesday, 12th January 2021 4:57:47 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -53,11 +53,9 @@ def getParameters():
                             choices=['True', 'False'], help='enable the tensorboard')
     parser.add_argument('--log_step', type=int, default=0)
     parser.add_argument('--sample_step', type=int, default=0)
-    parser.add_argument('--model_save_step', type=int, default=0)
-    parser.add_argument('--train_logs_root', type=str, default="")
     
 
-    # template (onece editing finished, it should be deleted)
+    # TODO template (onece editing finished, it should be deleted)
     parser.add_argument('--str_parameter', type=str, default="default", help='str parameter')
     parser.add_argument('--str_parameter_choices', type=str, default="default", choices=['choice1', 'choice2','choice3'], help='str parameter with choices list')
     parser.add_argument('--int_parameter', type=int, default=0, help='int parameter')
@@ -145,7 +143,7 @@ def main():
             sys_state[item[0]] = item[1]
 
         # create related dirs
-        sys_state["logRootPath"] = config.train_logs_root
+        sys_state["logRootPath"] = env_config["trainLogRoot"]
         createDirs(sys_state)
         
         # create reporter file
@@ -156,19 +154,17 @@ def main():
         writeConfig(config_json, sys_state)
 
         # save the dependent scripts 
-        # and copy the scripts to the project dir
+        # TODO and copy the scripts to the project dir
         
+        # save the trainer script into [train_logs_root]\[version name]\scripts\
         file1       = os.path.join(env_config["trainScriptsPath"], "trainer_%s.py"%sys_state["trainScriptName"])
         tgtfile1    = os.path.join(sys_state["projectScripts"], "trainer_%s.py"%sys_state["trainScriptName"])
         shutil.copyfile(file1,tgtfile1)
 
+        # TODO replace below lines, those lines are designed to save the critical scripts in your project
         file2       = os.path.join("./components", "%s.py"%sys_state["gScriptName"])
         tgtfile2    = os.path.join(sys_state["projectScripts"], "%s.py"%sys_state["gScriptName"])
         shutil.copyfile(file2,tgtfile2)
-
-        file3       = os.path.join("./components", "%s.py"%sys_state["dScriptName"])
-        tgtfile3    = os.path.join(sys_state["projectScripts"], "%s.py"%sys_state["dScriptName"])
-        shutil.copyfile(file3,tgtfile3)
 
     elif config.phase == "finetune":
         sys_state["logRootPath"]    = env_config["trainLogRoot"]
@@ -280,8 +276,9 @@ def main():
     if config.phase == "train" or config.phase == "finetune":
         
         # get the dataset path
-        sys_state["content"]= env_config["datasetPath"]["Place365_big"]
-        sys_state["style"]  = env_config["datasetPath"]["WikiArt"]
+        # TODO replace below lines, those lines are designed to obtain dataset information
+        # from environment configuration file [./env/env.json]
+        sys_state["dataset_path"]= env_config["datasetPath"]["Imagenet"]
 
         # display the training information
         moduleName  = "train_scripts.trainer_" + sys_state["trainScriptName"]
@@ -293,6 +290,7 @@ def main():
         sys_state["style"]  = env_config["datasetPath"]["WikiArt"]
         
         # print some important information
+        # TODO replace blow lines
         print("Start to run training script: {}".format(moduleName))
         print("Traning version: %s"%sys_state["version"])
         print("Training Script Name: %s"%sys_state["trainScriptName"])

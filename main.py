@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 5th January 2021 2:34:05 pm
+# Last Modified:  Friday, 15th January 2021 2:33:58 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -27,7 +27,8 @@ dir_list = [
     "train_scripts",
     "test_scripts",
     "utilities",
-    "components"
+    "components",
+    "losses"
 ]
 
 scripts_list = [ # [source filename in related_scripts]>[target file path]
@@ -45,7 +46,11 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "train_script_template.py>train_scripts/train_script_template.py",
     "test_script_template.py>test_scripts/test_script_template.py",
     "learningrate_scheduler.py>utilities/learningrate_scheduler.py",
-    "env.json>env/env.json"
+    "env.json>env/env.json",
+    "utilities.py>utilities/utilities.py",
+    "save_heatmap.py>utilities/save_heatmap.py",
+    "vgg_arch.py>losses/vgg_arch.py",
+    "PerceptualLoss.py>losses/PerceptualLoss.py"
 ]
 
 if __name__ == "__main__":

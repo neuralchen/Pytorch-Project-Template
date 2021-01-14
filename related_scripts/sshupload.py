@@ -5,12 +5,13 @@
 # Created Date: Tuesday September 24th 2019
 # Author: Lcx
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Sunday, 12th July 2020 4:27:49 pm
+# Last Modified:  Tuesday, 12th January 2021 2:02:12 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2019 Shanghai Jiao Tong University
 #############################################################
 
 import paramiko,os
+# ssh传输类：
 
 class fileUploaderClass(object):
     def __init__(self,serverIp,userName,passWd,port=22):
@@ -52,6 +53,12 @@ class fileUploaderClass(object):
     def sshScpGet(self, remoteFile, localFile, showProgress=False):
         self.__ssh__.connect(self.__ip__, self.__port__, self.__userName__, self.__passWd__)
         sftp = paramiko.SFTPClient.from_transport(self.__ssh__.get_transport())
+        try:
+            sftp.stat(remoteFile)
+            print("Remote file exists!")
+        except:
+            print("Remote file does not exist!")
+            return False
         sftp = self.__ssh__.open_sftp()
         if showProgress:
             sftp.get(remoteFile, localFile,callback=self.__putCallBack__)
@@ -59,9 +66,10 @@ class fileUploaderClass(object):
             sftp.get(remoteFile, localFile)
         sftp.close()
         self.__ssh__.close()
+        return True
     
     def __putCallBack__(self,transferred,total):
-        print("current transferred %.1f percent"%(transferred/total*100))
+        print("current transferred %3.1f percent"%(transferred/total*100),end='\r')
     
     def sshScpGetmd5(self, file_path):
         self.__ssh__.connect(self.__ip__, self.__port__, self.__userName__, self.__passWd__)
@@ -77,6 +85,7 @@ class fileUploaderClass(object):
             sftp.close()
             self.__ssh__.close()
             return (False,None)
+            
     def sshScpRename(self, oldpath, newpath):
         self.__ssh__.connect(self.__ip__, self.__port__ , self.__userName__, self.__passWd__)
         sftp = paramiko.SFTPClient.from_transport(self.__ssh__.get_transport())

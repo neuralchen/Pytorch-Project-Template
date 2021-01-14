@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 #############################################################
-# File: train_script_template.py
+# File: trainer_script_template.py
 # Created Date: Friday December 25th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 5th January 2021 2:32:01 pm
+# Last Modified:  Tuesday, 12th January 2021 10:25:48 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -21,14 +21,25 @@ from tqdm import tqdm
 # modify this template to derive your train class
 
 class Trainer(object):
-    def __init__(self, config, dataloaders_list, reporter):
+    def __init__(self, config, reporter):
 
         self.config     = config
         # logger
         self.reporter   = reporter
+        
         # Data loader
-        self.train_loader   = dataloaders_list[0]
-        self.test_loader    = dataloaders_list[1]
+        print("Prepare the dataloader...")
+        dlModulename    = config["dataloader"]
+        package         = __import__(dlModulename, fromlist=True)
+        dataloaderClass = getattr(package, 'GetLoader')
+        
+        # TODO replace below lines to config your dataloader
+        dataloader      = dataloaderClass(config["dataset_path"],
+                                        config["batchSize"],
+                                        config["randomSeed"])
+        self.train_loader= dataloader
+        
+        # self.eval_loader    = dataloaders_list[1]
 
     def train(self):
         
@@ -55,20 +66,22 @@ class Trainer(object):
             tensorboard_writer = build_tensorboard(self.config["projectSummary"])
         
         print("build models...")
-        # [import models here]
+        # TODO [import models here]
 
         # print and recorde model structure
         self.reporter.writeInfo("Model structure:")
-        network = model()                           # [replace this]
-        self.reporter.writeModel(model.__str__())   # [replace this]
-
+        
+        # TODO [replace this]
+        network = model()
+        self.reporter.writeModel(model.__str__())
+        
         # train in GPU
         if self.config["cuda"] >=0:
             network = network.cuda()
 
         start = 0
 
-        if self.config["mode"] == "finetune":
+        if self.config["phase"] == "finetune":
             model_epoch = self.config["checkpointEpoch"]
             model_path = os.path.join(ckpt_dir, "epoch%d_resnet50.pth"%model_epoch)
             network.load_state_dict(torch.load(model_path))
@@ -76,11 +89,14 @@ class Trainer(object):
             start = model_epoch
         
         print("build the optimizer...")
+
         # Optimizer
+        # TODO replace below lines
         optimizer = torch.optim.SGD(class_net.parameters(), 
                             lr=lr_base, momentum=momentum, weight_decay=5e-4) # [replace this]
 
         # Loss
+        # TODO replace below lines
         criterion = nn.CrossEntropyLoss() # [replace this]
         
         # Caculate the epoch number
