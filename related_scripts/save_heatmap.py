@@ -5,7 +5,7 @@
 # Created Date: Friday January 15th 2021
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 2:28:32 am
+# Last Modified:  Friday, 15th January 2021 10:23:13 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2021 Shanghai Jiao Tong University
 #############################################################
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
-def SaveHeatmap(heatmaps, path, row=-1):
+def SaveHeatmap(heatmaps, path, row=-1, dpi=72):
     """
     The input tensor must be B X 1 X H X W
     """
@@ -40,7 +40,7 @@ def SaveHeatmap(heatmaps, path, row=-1):
     for i in range(batch_size):
         img_path = os.path.join(temp_path,'temp_batch_{}.png'.format(i))
         sns.heatmap(heatmaps[i,0,:,:],vmin=0,vmax=heatmaps[i,0,:,:].max(),cbar=False)
-        plt.savefig(img_path, dpi=72, bbox_inches = 'tight', pad_inches = 0)
+        plt.savefig(img_path, dpi=dpi, bbox_inches = 'tight', pad_inches = 0)
         img = cv2.imread(img_path)
         if i == 0:
             H,W,C = img.shape

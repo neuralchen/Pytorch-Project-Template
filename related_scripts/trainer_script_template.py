@@ -5,7 +5,7 @@
 # Created Date: Friday December 25th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 12th January 2021 10:25:48 pm
+# Last Modified:  Friday, 15th January 2021 10:31:47 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -13,10 +13,9 @@
 
 import os
 import time
-
 import torch
 import torch.nn as nn
-from tqdm import tqdm
+from utilities.save_heatmap import SaveHeatmap
 
 # modify this template to derive your train class
 
@@ -28,18 +27,87 @@ class Trainer(object):
         self.reporter   = reporter
         
         # Data loader
-        print("Prepare the dataloader...")
+        #============build train dataloader==============#
+        print("Prepare the train dataloader...")
         dlModulename    = config["dataloader"]
-        package         = __import__(dlModulename, fromlist=True)
+        package         = __import__("data_tools.dataloader_%s"%dlModulename, fromlist=True)
         dataloaderClass = getattr(package, 'GetLoader')
-        
-        # TODO replace below lines to config your dataloader
-        dataloader      = dataloaderClass(config["dataset_path"],
+        dataloader      = dataloaderClass(config["rainnet_hdf5"],
                                         config["batchSize"],
                                         config["randomSeed"])
         self.train_loader= dataloader
+
+        #========build evaluation dataloader=============#
+        print("Prepare the evaluation dataloader...")
+        dlModulename    = config["evalDataloader"]
+        package         = __import__("data_tools.eval_dataloader_%s"%dlModulename, fromlist=True)
+        dataloaderClass = getattr(package, 'EvalDataset')
+        dataloader      = dataloaderClass(config["rainnet_hdf5_eval"],
+                                            config["evalBatchSize"])
+        self.eval_loader= dataloader
+
+        self.eval_iter  = len(dataloader)//config["evalBatchSize"]
+        if len(dataloader)%config["evalBatchSize"]>0:
+            self.eval_iter+=1
+
+        #============build tensorboard==============#
+        if self.config["useTensorboard"]:
+            from utilities.utilities import build_tensorboard
+            self.tensorboard_writer = build_tensorboard(self.config["projectSummary"])
+
+
+    # TODO modify this function to build your models
+    def __init_framework__(self):
+        '''
+            This function is designed to define the framework,
+            and print the framework information into the log file
+        '''
+        #===============build models================#
+        print("build models...")
+        # TODO [import models here]
+        from components.RRDBNet import RRDBNet
+
+        # print and recorde model structure
+        self.reporter.writeInfo("Model structure:")
+
+        # TODO replace below lines to define the model framework
+        self.network = RRDBNet(5,1)
+        self.reporter.writeModel(self.network.__str__())
         
-        # self.eval_loader    = dataloaders_list[1]
+        # train in GPU
+        if self.config["cuda"] >=0:
+            self.network = self.network.cuda()
+
+        # if in finetune phase, load the pretrained checkpoint
+        if self.config["phase"] == "finetune":
+            model_path = os.path.join(self.config["projectCheckpoints"],
+                                        "epoch%d_%s.pth"%(self.config["checkpointStep"],
+                                        self.config["checkPointNames"]["GeneratorName"]))
+            self.network.load_state_dict(torch.load(model_path))
+            print('loaded trained backbone model epoch {}...!'.format(self.config["projectCheckpoints"]))
+    
+
+    # TODO modify this function to evaluate your model
+    def __evaluation__(self, epoch, step = 0):
+        # Evaluate the checkpoint
+        self.network.eval()
+        with torch.no_grad():
+            lr,hr = self.eval_loader()
+            if self.config["cuda"] >=0:
+                hr = hr.cuda()
+                lr = lr.cuda()
+            res = self.network(lr)
+            print("Save test results......")
+            res = res.cpu().numpy()
+            hr = hr.cpu().numpy()
+            generated_path = os.path.join(self.config["projectSamples"],
+                                'epoch{}_v_{}_batch.png'.format(epoch,
+                                        self.config["version"]))
+            hr_path        = os.path.join(self.config["projectSamples"],
+                                'epoch{}_v_{}_batch_GT.png'.format(epoch,
+                                        self.config["version"]))
+            SaveHeatmap(res,generated_path,2)
+            SaveHeatmap(hr,hr_path,2)
 
     def train(self):
         
@@ -48,83 +116,79 @@ class Trainer(object):
         log_frep    = self.config["logStep"]
         model_freq  = self.config["modelSaveEpoch"]
         lr_base     = self.config["lr"]
-        batch_size  = self.config["batchSize"]
-        test_bs     = self.config["testBatchSize"]
         total_epoch = self.config["totalEpoch"]
+        beta1       = self.config["beta1"]
+        beta2       = self.config["beta2"]
+        l1_W        = self.config["l1Weight"]
         # lrDecayStep = self.config["lrDecayStep"]
-        # [more configurations here]
-        
-        # get the dataloaders
-        train_loader= self.train_loader
-        test_loader = self.test_loader
+        # TODO [more configurations here]
 
-        total_test= len(test_loader)
+        #===============build framework================#
+        self.__init_framework__()
 
-        # use the tensorboard
-        if self.config["useTensorboard"]:
-            from utilities.utilities import build_tensorboard
-            tensorboard_writer = build_tensorboard(self.config["projectSummary"])
-        
-        print("build models...")
-        # TODO [import models here]
-
-        # print and recorde model structure
-        self.reporter.writeInfo("Model structure:")
-        
-        # TODO [replace this]
-        network = model()
-        self.reporter.writeModel(model.__str__())
-        
-        # train in GPU
-        if self.config["cuda"] >=0:
-            network = network.cuda()
-
-        start = 0
-
+        # set the start point for training loop
         if self.config["phase"] == "finetune":
-            model_epoch = self.config["checkpointEpoch"]
-            model_path = os.path.join(ckpt_dir, "epoch%d_resnet50.pth"%model_epoch)
-            network.load_state_dict(torch.load(model_path))
-            print('loaded trained backbone model epoch {}...!'.format(model_epoch))
-            start = model_epoch
+            start = self.config["checkpointStep"] - 1
+        else:
+            start = 0
         
+
+        #===============build optimizer================#
         print("build the optimizer...")
-
         # Optimizer
-        # TODO replace below lines
-        optimizer = torch.optim.SGD(class_net.parameters(), 
-                            lr=lr_base, momentum=momentum, weight_decay=5e-4) # [replace this]
+        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, 
+                                    self.network.parameters()), lr_base, [beta1, beta2])
 
-        # Loss
-        # TODO replace below lines
-        criterion = nn.CrossEntropyLoss() # [replace this]
+        #===============build losses===================#
+        # TODO replace below lines to build your losses
+        l1 = nn.L1Loss() # [replace this]
+
+        from losses.PerceptualLoss import PerceptualLoss
+        perceptual_config = self.config["perceptual"]
+        ploss = PerceptualLoss(
+                        perceptual_config["layer_weights"],
+                        perceptual_config["vgg_type"],
+                        perceptual_config["use_input_norm"],
+                        perceptual_config["perceptual_weight"],
+                        perceptual_config["criterion"]
+                    )
+        if self.config["cuda"] >=0:
+            ploss = ploss.cuda()
         
         # Caculate the epoch number
-        print("prepare the dataloaders...")
-        total_len   = self.config["dataLen"]
-        step_epoch  = total_len//batch_size     # steps in each epoch
-        total_step  = total_step * batch_size
-        print("Total step=%d in each epoch"%step_epoch)
+        step_epoch  = len(train_loader)
+        print("Total step = %d in each epoch"%step_epoch)
 
         # Start time
         import datetime
         print("Start to train at %s"%(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         
-        print('Start   ======  training...')
+        print('Start   ===========================  training...')
         start_time = time.time()
         for epoch in range(start, total_epoch):
             for step in range(step_epoch):
                 # Set the networks to train mode
-                network.train()
-                # [add more code here]
+                self.network.train()
+                # TODO [add more code here]
                 
-                # read the training data
-                content_images, label  = train_loader.next()# [replace this]
-                label           = label.long()              # [replace this]
+                # TODO read the training data
+                lr, hr  = train_loader.next()
                 
-                # [inference code here]
-                # [caculate losses]
-
+                # TODO [inference code here]
+                generated_hr = self.network(lr)
+                
+                # TODO [caculate losses]
+                # l1 loss
+                loss_l1 = l1(generated_hr,hr)
+                
+                # perceptual loss
+                loss_per = ploss(generated_hr,hr)
+                # loss_per= perceptual_loss(generated_hr.repeat_interleave(3,1),hr.repeat_interleave(3,1))
+                
+                # total loss
+                loss_curr= l1_W * loss_l1 + loss_per
+                # loss_curr = loss_l1
+                
                 # clear cumulative gradient
                 optimizer.zero_grad()
                 # caculate gradients
@@ -138,48 +202,40 @@ class Trainer(object):
                     elapsed = str(datetime.timedelta(seconds=elapsed))
 
                     # cumulative steps
-                    cum_step = (total_step1 * epoch + step + 1)
+                    cum_step = (step_epoch * epoch + step + 1)
                     
-                    print("[{}], Elapsed [{}], Elapsed [{}/{}], Step [{}/{}], loss: {:.4f}, acc: {:.3f}%".
-                        format(self.config["version"], elapsed, epoch, total_epoch, step + 1, total_step, 
-                                loss_curr.item(), 100. * correct / total_label))
+                    #==================Print log info======================#
+                    print("[{}], Elapsed [{}], Epoch [{}/{}], Step [{}/{}], loss: {:.4f}, l1: {:.4f}, perceptual: {:.4f}".
+                        format(self.config["version"], elapsed, epoch + 1, total_epoch, step + 1, step_epoch, 
+                                loss_curr.item(),loss_l1.item(), loss_per.item()))
+                    
+                    #===================Write log info into log file=======#
                     self.reporter.writeTrainLog(epoch+1,step+1,
-                                "loss: {:.4f}, acc: {:.3f}%".format(loss_curr.item(), 100. * correct / total_label))
-                    
+                                "loss: {:.4f}, l1: {:.4f}, perceptual: {:.4f}".format(loss_curr.item(),
+                                                                        loss_l1.item(), loss_per.item() ))
+
+                    #==================Tensorboard=========================#
                     # write training information into tensorboard log files
                     if self.config["useTensorboard"]:
-                        tensorboard_writer.add_scalar('data/loss', loss_curr.item(), cum_step) # [replace this]
+
+                        # TODO replace  below lines to record the losses or metrics 
+                        self.tensorboard_writer.add_scalar('data/loss', loss_curr.item(), cum_step)
             
-            # adjust the learning rate
-            if epoch == 40 or epoch ==75:
+            #===============adjust learning rate============#
+            if (epoch + 1) in self.config["lrDecayStep"]:
                 print("Learning rate decay")
                 for p in optimizer.param_groups:
-                    p['lr'] *= 0.1
+                    p['lr'] *= self.config["lrDecay"]
                     print("Current learning rate is %f"%p['lr'])
 
-            # save the checkpoint
+            #===============save checkpoints================#
             if (epoch+1) % model_freq==0:
                 print("Save epoch %d model checkpoint!"%(epoch+1))
-                torch.save(class_net.state_dict(),
-                        os.path.join(ckpt_dir, 'epoch{}_resnet50.pth'.format(epoch + 1)))
-
-                # test the checkpoint
-                class_net.eval()
-                total_label = 0
-                correct     = 0
-                with torch.no_grad():
-                    for _ in tqdm(range(total_test//test_batch_size)):
-                        content, label = test_loader()
-                        if self.config["cuda"] >=0:
-                            content = content.cuda() 
-                            label   = label.cuda()      
-                        predict = class_net(content)
-                        _, predicted = predict.max(1)
-                        total_label += label.size(0)
-                        correct += predicted.eq(label).sum().item()
-                    test_acc = 100. * correct / total_label
-                    print("Test Acc: {:.3f}%".format(test_acc))
-                    self.reporter.writeTrainLog(epoch+1,step+1,
-                                "Test Acc: {:.3f}%".format(test_acc))
-                    if self.config["useTensorboard"]:
-                        tensorboard_writer.add_scalar('data/acc', test_acc, (total_step1 * (epoch+1)))
+                torch.save(self.network.state_dict(),
+                        os.path.join(ckpt_dir, 'epoch{}_{}.pth'.format(epoch + 1, 
+                                    self.config["checkPointNames"]["GeneratorName"])))
+                del hr
+                del lr
+                del generated_hr
+                
+                self.__evaluation__(epoch+1)

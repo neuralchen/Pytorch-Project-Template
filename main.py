@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 2:33:58 am
+# Last Modified:  Friday, 15th January 2021 10:39:00 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -50,7 +50,10 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "utilities.py>utilities/utilities.py",
     "save_heatmap.py>utilities/save_heatmap.py",
     "vgg_arch.py>losses/vgg_arch.py",
-    "PerceptualLoss.py>losses/PerceptualLoss.py"
+    "dataloader_hdf5.py>data_tools/dataloader_hdf5.py",
+    "dataloader_lmdb.py>data_tools/dataloader_lmdb.py",
+    "eval_dataloader_hdf5.py>data_tools/eval_dataloader_hdf5.py",
+    "test_dataloader_hdf5.py>data_tools/test_dataloader_hdf5.py"
 ]
 
 if __name__ == "__main__":

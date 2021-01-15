@@ -8,6 +8,8 @@
 - tkinter (For GUI)
 - pillow
 - torchvision
+- seaborn
+- opencv
 
 ## Usage
 - To configure the project in the ```main.py```.

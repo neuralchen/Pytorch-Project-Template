@@ -5,7 +5,7 @@
 # Created Date: Tuesday April 28th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Tuesday, 12th January 2021 4:57:47 pm
+# Last Modified:  Friday, 15th January 2021 10:36:14 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -47,6 +47,13 @@ def getParameters():
 
     # test
     parser.add_argument('--test_script_name', type=str, default='tester script name')
+    parser.add_argument('--test_batchsize', type=int, default=20)
+    parser.add_argument('--node_name', type=str, default='localhost', 
+                            choices=['localhost', '4card','8card','new4card'])
+    parser.add_argument('--test_dataset_path', type=str, default='E:\\RainNet_Dataset\\RainNet_Evaluation.hdf5')
+    parser.add_argument('--use_specified_data', type=str2bool, default='False')
+    parser.add_argument('--save_test_result', type=str2bool, default='True')
+    parser.add_argument('--test_dataloader', type=str, default='hdf5')
     
     # logs (does not to be changed in most time)
     parser.add_argument('--use_tensorboard', type=str2bool, default='True',
@@ -130,7 +137,7 @@ def main():
 
     sys_state["cuda"]   = config.cuda
     
-    # Train phase
+    #=======================Train Phase=========================#
     if config.phase == "train":
         
         sys_state["version"]                = config.version
@@ -161,11 +168,9 @@ def main():
         tgtfile1    = os.path.join(sys_state["projectScripts"], "trainer_%s.py"%sys_state["trainScriptName"])
         shutil.copyfile(file1,tgtfile1)
 
-        # TODO replace below lines, those lines are designed to save the critical scripts in your project
-        file2       = os.path.join("./components", "%s.py"%sys_state["gScriptName"])
-        tgtfile2    = os.path.join(sys_state["projectScripts"], "%s.py"%sys_state["gScriptName"])
-        shutil.copyfile(file2,tgtfile2)
+        # TODO replace below lines, here to save the critical scripts
 
+    #=====================Finetune Phase=====================#
     elif config.phase == "finetune":
         sys_state["logRootPath"]    = env_config["trainLogRoot"]
         sys_state["version"]        = config.version
@@ -178,27 +183,36 @@ def main():
             if item[0] in ignoreKey:
                 pass
             else:
-                sys_state[item[0]] = item[1]
+                sys_state[item[0]]  = item[1]
         
-        sys_state["phase"]           = config.phase
+        sys_state["phase"]          = config.phase
         createDirs(sys_state)
         reporter = Reporter(sys_state["reporterPath"])
         sys_state["com_base"]       = "train_logs.%s.scripts."%sys_state["version"]
-        
+    
+    #=======================Test Phase=========================#
     elif config.phase == "test":
-        sys_state["version"]        = config.version
-        sys_state["logRootPath"]    = env_config["trainLogRoot"]
-        sys_state["nodeName"]       = config.nodeName
-        sys_state["totalImg"]       = config.totalImg
-        sys_state["useSpecifiedImg"]= config.useSpecifiedImg
-        sys_state["checkpointStep"] = config.checkpoint
-        sys_state["testImgRoot"]    = config.testImgRoot
 
-        sys_state["testSamples"]    = os.path.join(env_config["testLogRoot"], sys_state["version"] , "samples")
+        # TODO modify below lines to obtain the configuration
+        sys_state["version"]            = config.version
+        sys_state["logRootPath"]        = env_config["trainLogRoot"]
+        sys_state["nodeName"]           = config.node_name
+        # sys_state["totalImg"]       = config.totalImg
+        sys_state["useSpecifiedData"]   = config.use_specified_data
+        sys_state["checkpointStep"]     = config.checkpoint
+        sys_state["testDataRoot"]       = config.test_dataset_path
+        sys_state["testScriptName"]     = config.test_script_name
+        sys_state["batchSize"]          = config.test_batchsize
+        sys_state["saveTestResult"]     = config.save_test_result
+        sys_state["testDataloader"]     = config.test_dataloader
+        
+        sys_state["testSamples"]        = os.path.join(env_config["testLogRoot"], 
+                                            sys_state["version"] , "samples")
+
         if not os.path.exists(sys_state["testSamples"]):
             os.makedirs(sys_state["testSamples"])
         
-        if config.useSpecifiedImg:
+        if config.use_specified_data:
             sys_state["useSpecifiedImg"]   = config.useSpecifiedImg
         # Create dirs
         createDirs(sys_state)
@@ -210,6 +224,7 @@ def main():
             nodeinf     = readConfig(env_config["remoteNodeInfo"])
             nodeinf     = nodeinf[sys_state["nodeName"]]
             uploader    = fileUploaderClass(nodeinf["ip"],nodeinf["user"],nodeinf["passwd"])
+            
             if config.train_logs_root=="":
                 remotebase  = os.path.join(nodeinf['basePath'],"train_logs",sys_state["version"]).replace('\\','/')
             else:
@@ -219,8 +234,8 @@ def main():
             remoteFile  = os.path.join(remotebase, env_config["configJsonName"]).replace('\\','/')
             localFile   = config_json
             
-            state = uploader.sshScpGet(remoteFile,localFile)
-            if not state:
+            ssh_state = uploader.sshScpGet(remoteFile,localFile)
+            if not ssh_state:
                 raise Exception(print("Get file %s failed! Program exists!"%remoteFile))
             print("success get the config file from server %s"%nodeinf['ip'])
 
@@ -237,37 +252,39 @@ def main():
             # Get scripts
             remoteFile  = os.path.join(remotebase, "scripts", sys_state["gScriptName"]+".py").replace('\\','/')
             localFile   = os.path.join(sys_state["projectScripts"], sys_state["gScriptName"]+".py")
-            state = uploader.sshScpGet(remoteFile, localFile)
-            if not state:
+            ssh_state = uploader.sshScpGet(remoteFile, localFile)
+            if not ssh_state:
                 raise Exception(print("Get file %s failed! Program exists!"%remoteFile))
             print("Get the scripts:%s.py successfully"%sys_state["gScriptName"])
             # Get checkpoint of generator
             localFile   = os.path.join(sys_state["projectCheckpoints"], "%d_Generator.pth"%sys_state["checkpointStep"])
             if not os.path.exists(localFile):
                 remoteFile  = os.path.join(remotebase, "checkpoints", "%d_Generator.pth"%sys_state["checkpointStep"]).replace('\\','/')
-                state = uploader.sshScpGet(remoteFile, localFile, True)
-                if not state:
+                ssh_state = uploader.sshScpGet(remoteFile, localFile, True)
+                if not ssh_state:
                     raise Exception(print("Get file %s failed! Program exists!"%remoteFile))
                 print("Get the %s file successfully"%("%d_Generator.pth"%sys_state["checkpointStep"]))
             else:
                 print("%s file exists"%("%d_Generator.pth"%sys_state["checkpointStep"]))
-        sys_state["ckp_name"]       = os.path.join(sys_state["projectCheckpoints"], "%d_Generator.pth"%sys_state["checkpointStep"])    
+
+        # TODO get the checkpoint file path
+        sys_state["ckp_name"]       = os.path.join(sys_state["projectCheckpoints"],
+                                        "epoch%d_%s.pth"%(sys_state["checkpointStep"],
+                                            sys_state["checkPointNames"]["GeneratorName"]))    
         # Get the test configurations
-        sys_state["testScriptName"] = config.testScriptName
-        sys_state["batchSize"]      = config.testBatchSize
-        sys_state["totalImg"]       = config.totalImg
-        sys_state["saveTestImg"]    = config.saveTestImg
+        
         sys_state["com_base"]       = "train_logs.%s.scripts."%sys_state["version"]
+
+        # make a reporter
         reporter = Reporter(sys_state["reporterPath"])
         
         # Display the test information
+        # TODO modify below lines to display your configuration information
         moduleName  = "test_scripts.tester_" + sys_state["testScriptName"]
         print("Start to run test script: {}".format(moduleName))
         print("Test version: %s"%sys_state["version"])
         print("Test Script Name: %s"%sys_state["testScriptName"])
-        print("Generator Script Name: %s"%sys_state["gScriptName"])
-        # print("Discriminator Script Name: %s"%sys_state["stuScriptName"])
-        print("Image Crop Size: %d"%sys_state["imCropSize"])
+
         package     = __import__(moduleName, fromlist=True)
         testerClass = getattr(package, 'Tester')
         tester      = testerClass(sys_state,reporter)
@@ -276,43 +293,28 @@ def main():
     if config.phase == "train" or config.phase == "finetune":
         
         # get the dataset path
-        # TODO replace below lines, those lines are designed to obtain dataset information
-        # from environment configuration file [./env/env.json]
-        sys_state["dataset_path"]= env_config["datasetPath"]["Imagenet"]
+        # TODO replace below lines to config dataset dirs
+        sys_state["rainnet_hdf5"]= env_config["datasetPath"]["rainnet_hdf5"]
+        sys_state["rainnet_hdf5_eval"]= env_config["datasetPath"]["rainnet_hdf5_eval"]
 
         # display the training information
         moduleName  = "train_scripts.trainer_" + sys_state["trainScriptName"]
         if config.phase == "finetune":
             moduleName  = sys_state["com_base"] + "trainer_" + sys_state["trainScriptName"]
         
-        # get the dataset path
-        sys_state["content"]= env_config["datasetPath"]["Place365_big"]
-        sys_state["style"]  = env_config["datasetPath"]["WikiArt"]
-        
         # print some important information
-        # TODO replace blow lines
         print("Start to run training script: {}".format(moduleName))
         print("Traning version: %s"%sys_state["version"])
-        print("Training Script Name: %s"%sys_state["trainScriptName"])
-        print("Generator Script Name: %s"%sys_state["gScriptName"])
-        print("Discriminator Script Name: %s"%sys_state["dScriptName"])
+        print("Dataloader Name: %s"%sys_state["dataloader"])
         # print("Image Size: %d"%sys_state["imsize"])
-        print("Image Crop Size: %d"%sys_state["imCropSize"])
-        print("D : G = %d : %d"%(sys_state["dStep"],sys_state["gStep"]))
         print("Batch size %d"%(sys_state["batchSize"]))
-        print("Resblock number %d"%(sys_state["resNum"]))
         
         # Load the training script and start to train
         reporter.writeConfig(sys_state)
 
-        print("prepare the dataloader...")
-        total_loader  = getLoader(sys_state["style"], sys_state["content"],
-                            sys_state["selectedStyleDir"],sys_state["selectedContentDir"],
-                            sys_state["imCropSize"], sys_state["batchSize"],sys_state["dataloader_workers"])
-
         package     = __import__(moduleName, fromlist=True)
         trainerClass= getattr(package, 'Trainer')
-        trainer     = trainerClass(sys_state, total_loader,reporter)
+        trainer     = trainerClass(sys_state, reporter)
         trainer.train()
 
 
