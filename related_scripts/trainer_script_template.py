@@ -5,7 +5,7 @@
 # Created Date: Friday December 25th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 10:31:47 am
+# Last Modified:  Friday, 15th January 2021 10:41:23 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -136,6 +136,7 @@ class Trainer(object):
         #===============build optimizer================#
         print("build the optimizer...")
         # Optimizer
+        # TODO replace below lines to build your optimizer
         optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, 
                                     self.network.parameters()), lr_base, [beta1, beta2])
 

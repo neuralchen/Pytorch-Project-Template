@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 10:39:00 am
+# Last Modified:  Friday, 15th January 2021 12:26:24 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -16,7 +16,7 @@ import argparse
 def getParameters():
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('--root', type=str, default="H:\\RainNet\\Code")
+    parser.add_argument('--root', type=str, default="H:\\TEST2\\Code")
     return parser.parse_args()
 
 
@@ -43,13 +43,14 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "checkpoint_manager.py>utilities/checkpoint_manager.py",
     "figure.py>utilities/figure.py",
     "README.md>README.md",
-    "train_script_template.py>train_scripts/train_script_template.py",
-    "test_script_template.py>test_scripts/test_script_template.py",
+    "trainer_script_template.py>train_scripts/trainer_script_template.py",
+    "tester_script_template.py>test_scripts/tester_script_template.py",
     "learningrate_scheduler.py>utilities/learningrate_scheduler.py",
     "env.json>env/env.json",
     "utilities.py>utilities/utilities.py",
     "save_heatmap.py>utilities/save_heatmap.py",
     "vgg_arch.py>losses/vgg_arch.py",
+    "PerceptualLoss.py>losses/PerceptualLoss.py",
     "dataloader_hdf5.py>data_tools/dataloader_hdf5.py",
     "dataloader_lmdb.py>data_tools/dataloader_lmdb.py",
     "eval_dataloader_hdf5.py>data_tools/eval_dataloader_hdf5.py",

@@ -5,7 +5,7 @@
 # Created Date: Tuesday January 12th 2021
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Wednesday, 13th January 2021 12:46:56 am
+# Last Modified:  Friday, 15th January 2021 11:34:33 am
 # Modified By: Chen Xuanhong
 # Copyright (c) 2021 Shanghai Jiao Tong University
 #############################################################
@@ -66,22 +66,3 @@ class EvalDataset:
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' + self.h5_path + ')'
-
-if __name__ == "__main__":
-    
-    dataset_path = "G:\\RainNet\\RainNet_H5\\RainNet_Evaluation.hdf5"
-
-    hdf5_dataloader = EvalDataset(dataset_path,64)
-    print(len(hdf5_dataloader))
-    # hdf5_dataloader = iter(hdf5_dataloader)
-    import time
-    import datetime
-    start_time = time.time()
-    for i in range(100):
-        lr,hr = hdf5_dataloader()
-        # lr,hr = next(hdf5_dataloader)
-        print(hr.shape)
-        # hr = hr +1
-    elapsed = time.time() - start_time
-    elapsed = str(datetime.timedelta(seconds=elapsed))
-    print("Elapsed [{}]".format(elapsed))

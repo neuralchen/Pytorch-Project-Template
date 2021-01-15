@@ -1,5 +1,0 @@
-{
-    "trainScriptName"   :"trainscriptname", 
-    "totalEpoch"        :1,
-    "batchSize"         :64
-}
