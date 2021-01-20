@@ -5,7 +5,7 @@
 # Created Date: Monday April 6th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 12:26:24 pm
+# Last Modified:  Wednesday, 20th January 2021 2:18:46 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -16,7 +16,7 @@ import argparse
 def getParameters():
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('--root', type=str, default="H:\\TEST2\\Code")
+    parser.add_argument('--root', type=str, default="H:\\Multi Scale Kernel Prediction Networks")
     return parser.parse_args()
 
 
@@ -45,6 +45,7 @@ scripts_list = [ # [source filename in related_scripts]>[target file path]
     "README.md>README.md",
     "trainer_script_template.py>train_scripts/trainer_script_template.py",
     "tester_script_template.py>test_scripts/tester_script_template.py",
+    "train_template.yaml>train_yamls/train_template.yaml",
     "learningrate_scheduler.py>utilities/learningrate_scheduler.py",
     "env.json>env/env.json",
     "utilities.py>utilities/utilities.py",

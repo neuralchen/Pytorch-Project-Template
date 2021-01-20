@@ -5,7 +5,7 @@
 # Created Date: Friday December 25th 2020
 # Author: Chen Xuanhong
 # Email: chenxuanhongzju@outlook.com
-# Last Modified:  Friday, 15th January 2021 10:41:23 am
+# Last Modified:  Wednesday, 20th January 2021 2:16:45 pm
 # Modified By: Chen Xuanhong
 # Copyright (c) 2020 Shanghai Jiao Tong University
 #############################################################
@@ -28,29 +28,36 @@ class Trainer(object):
         
         # Data loader
         #============build train dataloader==============#
+        # TODO to modify the key: "your_train_dataset" to get your train dataset path
+        train_dataset = config["dataset_paths"]["your_train_dataset"]
+
+        #================================================#
         print("Prepare the train dataloader...")
         dlModulename    = config["dataloader"]
         package         = __import__("data_tools.dataloader_%s"%dlModulename, fromlist=True)
         dataloaderClass = getattr(package, 'GetLoader')
-        dataloader      = dataloaderClass(config["rainnet_hdf5"],
+        dataloader      = dataloaderClass(train_dataset,
                                         config["batchSize"],
                                         config["randomSeed"])
         self.train_loader= dataloader
 
         #========build evaluation dataloader=============#
+        # TODO to modify the key: "your_eval_dataset" to get your evaluation dataset path
+        eval_dataset = config["dataset_paths"]["your_eval_dataset"]
+
+        #================================================#
         print("Prepare the evaluation dataloader...")
         dlModulename    = config["evalDataloader"]
         package         = __import__("data_tools.eval_dataloader_%s"%dlModulename, fromlist=True)
         dataloaderClass = getattr(package, 'EvalDataset')
-        dataloader      = dataloaderClass(config["rainnet_hdf5_eval"],
-                                            config["evalBatchSize"])
+        dataloader      = dataloaderClass(eval_dataset,config["evalBatchSize"])
         self.eval_loader= dataloader
 
         self.eval_iter  = len(dataloader)//config["evalBatchSize"]
         if len(dataloader)%config["evalBatchSize"]>0:
             self.eval_iter+=1
 
-        #============build tensorboard==============#
+        #==============build tensorboard=================#
         if self.config["useTensorboard"]:
             from utilities.utilities import build_tensorboard
             self.tensorboard_writer = build_tensorboard(self.config["projectSummary"])
@@ -157,7 +164,7 @@ class Trainer(object):
             ploss = ploss.cuda()
         
         # Caculate the epoch number
-        step_epoch  = len(train_loader)
+        step_epoch  = len(self.train_loader)
         print("Total step = %d in each epoch"%step_epoch)
 
         # Start time
@@ -173,7 +180,7 @@ class Trainer(object):
                 # TODO [add more code here]
                 
                 # TODO read the training data
-                lr, hr  = train_loader.next()
+                lr, hr  = self.train_loader.next()
                 
                 # TODO [inference code here]
                 generated_hr = self.network(lr)

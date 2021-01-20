@@ -1,0 +1,38 @@
+# Related scripts
+trainScriptName: rrdbnet
+
+# Training information
+totalEpoch: 100
+batchSize: 24
+evalBatchSize: 6
+
+# Dataset
+dataloader: hdf5
+randomSeed: 1234
+evalDataloader: hdf5
+
+# Optimizer
+lr: 0.0002
+lrDecay: 0.1
+lrDecayStep: [40,70]
+lrDecayEnable: True
+beta1: 0.9
+beta2: 0.99
+
+# Losses
+l1Weight: 30.0
+perceptual:
+    layer_weights:
+      'conv5_4': 1  # before relu
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: 1.0
+    criterion: l1
+
+
+# Log 
+logStep: 100
+modelSaveEpoch: 1
+useTensorboard: True
+checkPointNames:
+  GeneratorName: RRDBNet_Implicit
